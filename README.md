@@ -27,7 +27,7 @@ If you want to try with this project, you could start by forking this into your 
 
 **Once created you should select your feed fromt he dropdown and click Connect to Feed.**
 
-- now click on Nuget.exe and you should see the path to your feed in the XML under the Project Setup section.
+- now click on Nuget.exe and you should see the URL to your feed in the XML under the Project Setup section. Make a note of this!
 
 ### Service Connection
 
