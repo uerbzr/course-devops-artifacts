@@ -206,3 +206,5 @@ variables:
 ```yml
 projects: "$(projectPath)"
 ```
+
+[return](https://github.com/uerbzr/course-devops)
