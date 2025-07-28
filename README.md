@@ -139,7 +139,6 @@ jobs:
 - Click on Pipelines and the Create Pipeline button.
 - Click Azure Repos Git YAML option
 - Select the Repository
--
 - The pipeline needs to know which project you are building into a nuget package. In this case it'll be workshop.calculator so each of the steps that build will reference this with \*\*/workshop.calculator.csproj .
 - Another requirement for the pipeline is to know the GUID of the Artifact that is the Nuget Feed. Few tricks to obtain this including the below powershell script to
 
@@ -186,15 +185,15 @@ $response.value | ForEach-Object {
 
 ## Best Practice
 
-An extra step would be to place the variables into a library gruop.
+An extra step would be to place the variables into a Libbrary Group in the Pipelines section.
 
 - From the main project page go to Pipelines => Library
 - Click on the + Variable Group button
-- Type a new variable group name into the textbox (e.g. ProjectSettings)
-- Add some variables e.g.
+- Type a new variable group name into the textbox: ProjectSettings
+- Add some variables:
 
   - Name: projectPath
-  - Value: \*\*/workshop.calculator.csproj )
+  - Value: \*\*/workshop.calculator.csproj
 
 - in the pipeline you can simply reference the group at the top:
 
