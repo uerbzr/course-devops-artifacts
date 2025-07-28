@@ -11,13 +11,13 @@ If you want to try with this project, you could start by forking this into your 
   - Click New Token
   - Write a Name in the textbox
   - Choose suitable expiration period
-  - Select permissions - Packaging, Build, Release should be given significant access
-  - Save this key somewhere outside of the repository so you DO NOT SHARE
-  - Not necessary for this task but consider looking at Show more scopes to see the kind of things you can achieve from a pipeline
+  - Under Scopes you can grant Full Access.
+  - Save this key somewhere outside of the repository so you DO NOT SHARE / PUSH
+  - Not necessary for this task but consider looking at a Custom Defined Scope, then show more scopes to see the kind of things you can achieve from a pipeline
 
 ### Artifact Setup
 
-- From the main project page click the Articacts button
+- From the main project overview summary page
 - Click Create New Feed
 - Enter a name into the textbox
 - Set the visibility to your required setting
@@ -25,8 +25,7 @@ If you want to try with this project, you could start by forking this into your 
 - Set the scope radio button
 - Click Create
 
-Your Artifact should now appear in the
-**_Once created you should select your feed fromt he dropdown and click Connect to Feed._**
+**Once created you should select your feed fromt he dropdown and click Connect to Feed.**
 
 - now click on Nuget.exe and you should see the path to your feed in the XML under the Project Setup section.
 
