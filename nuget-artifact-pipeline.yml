@@ -1,0 +1,82 @@
+name: "1.0.$(Rev:r)" 
+trigger:
+  - main
+
+pool:
+  vmImage: ubuntu-latest
+
+jobs:
+  - job: BuildAndTest
+    displayName: Build and Test
+    steps:
+      - task: UseDotNet@2
+        displayName: "Install .NET 9 SDK"
+        inputs:
+          packageType: "sdk"
+          version: "9.0.x"
+          includePreviewVersions: true
+      - task: DotNetCoreCLI@2
+        displayName: dotnet restore
+        inputs:
+          command: "restore"
+          projects: "**/workshop.calculator.csproj"
+          feedsToUse: "select"
+          vstsFeed: "09a3d620-34df-4061-a07f-7f7f531020df"
+      - task: DotNetCoreCLI@2
+        displayName: dotnet build
+        inputs:
+          command: "build"
+          projects: "**/*.csproj"
+
+      - task: DotNetCoreCLI@2
+        displayName: dotnet test
+        inputs:
+          command: "test"
+          projects: "**/*.Tests.csproj"
+
+  - job: CreateNugetPackage
+    displayName: Create Nuget Package
+    dependsOn: BuildAndTest
+    condition: succeeded()
+    steps:
+      - task: UseDotNet@2
+        displayName: "Install .NET 9 SDK"
+        inputs:
+          packageType: "sdk"
+          version: "9.0.x"
+          includePreviewVersions: true
+
+      - task: DotNetCoreCLI@2
+        displayName: dotnet pack
+        inputs:
+          command: "pack"
+          packagesToPack: "**/workshop.calculator.csproj"
+          versioningScheme: "byBuildNumber"
+
+      - task: NuGetAuthenticate@1
+        displayName: "Authenticate to Azure Artifacts"
+
+      - task: DotNetCoreCLI@2
+        displayName: "Pack NuGet Package"
+        inputs:
+          command: "pack"
+          packagesToPack: "**/*.csproj"
+          versioningScheme: "off"
+          includesNuGetOrg: true
+          arguments: "--configuration Release /p:PackageVersion=$(buildVersion)"
+
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: "push"
+          packagesToPush: "$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg"
+          nuGetFeedType: "internal"
+          publishVstsFeed: "9c1bc6ac-5cb4-4149-9cad-a096551fb621"
+          publishFeedCredentials: "XtonProductionsServiceConnection"
+
+      - task: PublishBuildArtifacts@1
+        displayName: publish artifact
+        inputs:
+          PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+          TargetPath: '\\calculator\$(Build.DefinitionName)\$(Build.BuildNumber)'
+          ArtifactName: "drop"
+          publishLocation: "Container"
