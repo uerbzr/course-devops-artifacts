@@ -48,7 +48,6 @@ To create a Service Connection you should have the feed url and the PAT token fr
 ### Pipeline
 
 - Create a file with the following called nuget-artifact-pipeline.yml in the root of the project
-- Add the yml
 
 ```yml
 name: "1.0.$(Rev:r)"
@@ -136,6 +135,7 @@ jobs:
 ```
 
 - Save this and ensure it is pushed
+- This won't trigger the pipeline, you have added it as a new pipeline.
 - Click on Pipelines and the Create Pipeline button.
 - Click Azure Repos Git YAML option
 - Select the Repository
