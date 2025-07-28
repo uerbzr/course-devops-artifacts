@@ -190,7 +190,8 @@ An extra step would be to place the variables into a library gruop.
 
 - From the main project page go to Pipelines => Library
 - Click on the + Variable Group button
-- Type a new variable group name into the textbox (e.g. ProjectSettings) 0 - Add some variables e.g.
+- Type a new variable group name into the textbox (e.g. ProjectSettings)
+- Add some variables e.g.
 
   - Name: projectPath
   - Value: \*\*/workshop.calculator.csproj )
