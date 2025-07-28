@@ -2,9 +2,9 @@
 
 ## Configure devops pipeline to publish a nuget package to a Nuget Artifact Feed
 
-To get a nuget feed pipeline up and running work through the steps below:
+To get a nuget feed pipeline up and running work through the steps below in Azure Devops:
 
-### Personal Access Token
+### Create a Personal Access Token
 
 - In the top right hand region, click on User Settings
 - Click on Personal Access Tokens
@@ -25,7 +25,8 @@ To get a nuget feed pipeline up and running work through the steps below:
 - Set the scope radio button
 - Click Create
 
-Once created you should select your feed fromt he dropdown and click Connect to Feed.
+Your Artifact should now appear in the
+**_Once created you should select your feed fromt he dropdown and click Connect to Feed._**
 
 - now click on Nuget.exe and you should see the path to your feed in the XML under the Project Setup section.
 
@@ -46,6 +47,99 @@ To create a Service Connection you should have the feed url and the PAT token fr
 
 ### Pipeline
 
+- Create a file with the following called nuget-artifact-pipeline.yml in the root of the project
+- Add the yml
+
+```yml
+name: "1.0.$(Rev:r)"
+trigger:
+  - main
+
+pool:
+  vmImage: ubuntu-latest
+
+jobs:
+  - job: BuildAndTest
+    displayName: Build and Test
+    steps:
+      - task: UseDotNet@2
+        displayName: "Install .NET 9 SDK"
+        inputs:
+          packageType: "sdk"
+          version: "9.0.x"
+          includePreviewVersions: true
+      - task: DotNetCoreCLI@2
+        displayName: dotnet restore
+        inputs:
+          command: "restore"
+          projects: "**/workshop.calculator.csproj"
+          feedsToUse: "select"
+          vstsFeed: "09a3d620-34df-4061-a07f-7f7f531020df"
+      - task: DotNetCoreCLI@2
+        displayName: dotnet build
+        inputs:
+          command: "build"
+          projects: "**/*.csproj"
+
+      - task: DotNetCoreCLI@2
+        displayName: dotnet test
+        inputs:
+          command: "test"
+          projects: "**/*.Tests.csproj"
+
+  - job: CreateNugetPackage
+    displayName: Create Nuget Package
+    dependsOn: BuildAndTest
+    condition: succeeded()
+    steps:
+      - task: UseDotNet@2
+        displayName: "Install .NET 9 SDK"
+        inputs:
+          packageType: "sdk"
+          version: "9.0.x"
+          includePreviewVersions: true
+
+      - task: DotNetCoreCLI@2
+        displayName: dotnet pack
+        inputs:
+          command: "pack"
+          packagesToPack: "**/workshop.calculator.csproj"
+          versioningScheme: "byBuildNumber"
+
+      - task: NuGetAuthenticate@1
+        displayName: "Authenticate to Azure Artifacts"
+
+      - task: DotNetCoreCLI@2
+        displayName: "Pack NuGet Package"
+        inputs:
+          command: "pack"
+          packagesToPack: "**/*.csproj"
+          versioningScheme: "off"
+          includesNuGetOrg: true
+          arguments: "--configuration Release /p:PackageVersion=$(buildVersion)"
+
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: "push"
+          packagesToPush: "$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg"
+          nuGetFeedType: "internal"
+          publishVstsFeed: "9c1bc6ac-5cb4-4149-9cad-a096551fb621"
+          publishFeedCredentials: "XtonProductionsServiceConnection"
+
+      - task: PublishBuildArtifacts@1
+        displayName: publish artifact
+        inputs:
+          PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+          TargetPath: '\\calculator\$(Build.DefinitionName)\$(Build.BuildNumber)'
+          ArtifactName: "drop"
+          publishLocation: "Container"
+```
+
+- Save this and ensure it is pushed
+- Click on Pipelines and the Create Pipeline button.
+- Click Azure Repos Git YAML option
+- Select the Repository
+-
 - The pipeline needs to know which project you are building into a nuget package. In this case it'll be workshop.calculator so each of the steps that build will reference this with \*\*/workshop.calculator.csproj .
 - Another requirement for the pipeline is to know the GUID of the Artifact that is the Nuget Feed. Few tricks to obtain this including the below powershell script to
 
@@ -88,4 +182,28 @@ $response.value | ForEach-Object {
     nuGetFeedType: "internal"
     publishVstsFeed: "GUID GOES HERE"
     publishFeedCredentials: "SERVICE CONNECTION GOES HERE"
+```
+
+## Best Practice
+
+An extra step would be to place the variables into a library gruop.
+
+- From the main project page go to Pipelines => Library
+- Click on the + Variable Group button
+- Type a new variable group name into the textbox (e.g. ProjectSettings) 0 - Add some variables e.g.
+
+  - Name: projectPath
+  - Value: \*\*/workshop.calculator.csproj )
+
+- in the pipeline you can simply reference the group at the top:
+
+```yml
+variables:
+  - group: ProjectSettings
+```
+
+- then where needed reference the variable:
+
+```yml
+projects: "$(projectPath)"
 ```

@@ -5,6 +5,9 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+  - group: ProjectSettings
+
 jobs:
   - job: BuildAndTest
     displayName: Build and Test
@@ -19,14 +22,14 @@ jobs:
         displayName: dotnet restore
         inputs:
           command: "restore"
-          projects: "**/workshop.calculator.csproj"
+          projects: "$(projectPath)"
           feedsToUse: "select"
           vstsFeed: "09a3d620-34df-4061-a07f-7f7f531020df"
       - task: DotNetCoreCLI@2
         displayName: dotnet build
         inputs:
           command: "build"
-          projects: "**/*.csproj"
+         projects: "$(projectPath)"
 
       - task: DotNetCoreCLI@2
         displayName: dotnet test
@@ -50,7 +53,7 @@ jobs:
         displayName: dotnet pack
         inputs:
           command: "pack"
-          packagesToPack: "**/workshop.calculator.csproj"
+          packagesToPack: "$(projectPath)"
           versioningScheme: "byBuildNumber"
 
       - task: NuGetAuthenticate@1
@@ -60,7 +63,7 @@ jobs:
         displayName: "Pack NuGet Package"
         inputs:
           command: "pack"
-          packagesToPack: "**/*.csproj"
+          packagesToPack: "$(projectPath)"
           versioningScheme: "off"
           includesNuGetOrg: true
           arguments: "--configuration Release /p:PackageVersion=$(buildVersion)"
