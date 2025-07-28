@@ -2,7 +2,7 @@
 
 ## Configure devops pipeline to publish a nuget package to a Nuget Artifact Feed
 
-To get a nuget feed pipeline up and running work through the steps below in Azure Devops:
+If you want to try with this project, you could start by forking this into your Github, creating a new Azure Devops Project and creating a new project and under Repos importing the code from your Github. You will still need to follow the steps below.
 
 ### Create a Personal Access Token
 
