@@ -169,8 +169,31 @@ $response.value | ForEach-Object {
 
 ```
 
-- once you have the GUID of the feed add it to line 73 of the pipeline
-- add the Service Connection on line 74
+-           publishVstsFeed: "9c1bc6ac-5cb4-4149-9cad-a096551fb621"
+          publishFeedCredentials: "calculatorserviceserviceconnection"
+- once you have the GUID of the feed add it publishVstsFeed of the push section
+- add the Service Connection to the publishFeedCredentials entry of the push section
+- add a Version to the .csproj file. Everytime you push you should manually increment this. More advanced could be to auto increment this (tricky!)
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Authors>Nigel</Authors>
+    <Description>Great Calculator for all your adding needs</Description>
+    <Copyright>XtonProductions Code</Copyright>
+    <Authors>Nigel</Authors>
+    <Version>1.0.100</Version>
+    <Company>Xton Productions</Company>
+    <PackageId>workshop.calculator</PackageId>
+    <Description>Sample calculator logic for NuGet packaging.</Description>
+  </PropertyGroup>
+
+</Project>
+```
 
 ```yml
 - task: DotNetCoreCLI@2
@@ -180,6 +203,48 @@ $response.value | ForEach-Object {
     nuGetFeedType: "internal"
     publishVstsFeed: "GUID GOES HERE"
     publishFeedCredentials: "SERVICE CONNECTION GOES HERE"
+```
+
+### Useful
+
+In the project that you have consumed the nuget feed, you'll need to do a couple of things.
+
+### Authenticate the URL of the feed
+
+First you'll need to authenticate against the nuget feed you published your package to. In the route of the repo, place a `nuget.config` file with the following contents. Ensure you put the feed name and personal access token.
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+<packageSources>
+<add key="MyPrivateFeed" value="{urlFeed}" />
+</packageSources>
+<packageSourceCredentials>
+<MyPrivateFeed>
+<add key="Username" value="AzureDevOps" />
+<add key="ClearTextPassword" value="{PersonalAccessToken}" />
+</MyPrivateFeed>
+</packageSourceCredentials>
+</configuration>
+```
+
+Next you should ensure you include a Version for the nuget package. Make sure you manually increment this when you push.
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="workshop.calculator" Version="1.0.50" />
+  </ItemGroup>
+
+</Project>
 ```
 
 ## Best Practice

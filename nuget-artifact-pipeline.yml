@@ -1,12 +1,13 @@
-name: "1.0.$(Rev:r)" 
+# Starter pipeline
+# Minimal setup: build, test, pack, and push NuGet package based on .csproj-defined version
+
+name: "1.0.$(Rev:r)" # pipeline build name using revision for uniqueness
+
 trigger:
   - main
 
 pool:
   vmImage: ubuntu-latest
-
-variables:
-  - group: ProjectSettings
 
 jobs:
   - job: BuildAndTest
@@ -18,27 +19,29 @@ jobs:
           packageType: "sdk"
           version: "9.0.x"
           includePreviewVersions: true
+
       - task: DotNetCoreCLI@2
         displayName: dotnet restore
         inputs:
           command: "restore"
-          projects: "$(projectPath)"
+          projects: "**/workshop.calculator.csproj"
           feedsToUse: "select"
           vstsFeed: "09a3d620-34df-4061-a07f-7f7f531020df"
+
       - task: DotNetCoreCLI@2
         displayName: dotnet build
         inputs:
           command: "build"
-         projects: "$(projectPath)"
+          projects: "**/workshop.calculator.csproj"
 
       - task: DotNetCoreCLI@2
         displayName: dotnet test
         inputs:
           command: "test"
-          projects: "**/*.Tests.csproj"
+          projects: "**/workshop.tests.csproj"
 
   - job: CreateNugetPackage
-    displayName: Create Nuget Package
+    displayName: Create NuGet Package
     dependsOn: BuildAndTest
     condition: succeeded()
     steps:
@@ -49,35 +52,37 @@ jobs:
           version: "9.0.x"
           includePreviewVersions: true
 
-      - task: DotNetCoreCLI@2
-        displayName: dotnet pack
-        inputs:
-          command: "pack"
-          packagesToPack: "$(projectPath)"
-          versioningScheme: "byBuildNumber"
-
       - task: NuGetAuthenticate@1
         displayName: "Authenticate to Azure Artifacts"
 
       - task: DotNetCoreCLI@2
-        displayName: "Pack NuGet Package"
+        displayName: "Pack NuGet Package (using version from .csproj)"
         inputs:
           command: "pack"
-          packagesToPack: "$(projectPath)"
+          packagesToPack: "**/workshop.calculator.csproj"
           versioningScheme: "off"
           includesNuGetOrg: true
-          arguments: "--configuration Release /p:PackageVersion=$(buildVersion)"
+          arguments: "--configuration Release"
+          outputDir: "$(Build.ArtifactStagingDirectory)"
+
+      - task: CmdLine@2
+        displayName: "List .nupkg files"
+        inputs:
+          script: |
+            echo "Listing .nupkg files:"
+            find "$(Build.ArtifactStagingDirectory)" -name "*.nupkg"
 
       - task: DotNetCoreCLI@2
+        displayName: "Push NuGet Package (using wildcard)"
         inputs:
           command: "push"
-          packagesToPush: "$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg"
+          packagesToPush: "$(Build.ArtifactStagingDirectory)/**/*.nupkg"
           nuGetFeedType: "internal"
           publishVstsFeed: "9c1bc6ac-5cb4-4149-9cad-a096551fb621"
-          publishFeedCredentials: "XtonProductionsServiceConnection"
+          publishFeedCredentials: "calculatorserviceserviceconnection"
 
       - task: PublishBuildArtifacts@1
-        displayName: publish artifact
+        displayName: Publish pipeline artifacts
         inputs:
           PathtoPublish: "$(Build.ArtifactStagingDirectory)"
           TargetPath: '\\calculator\$(Build.DefinitionName)\$(Build.BuildNumber)'
