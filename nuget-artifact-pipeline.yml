@@ -70,6 +70,7 @@ jobs:
         inputs:
           script: |
             echo "Listing .nupkg files:"
+            echo "Build number: $(Build.BuildNumber)"
             find "$(Build.ArtifactStagingDirectory)" -name "*.nupkg"
 
       - task: DotNetCoreCLI@2

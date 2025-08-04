@@ -134,12 +134,12 @@ jobs:
 ```
 
 - Save this and ensure it is pushed
-- This won't trigger the pipeline, you have added it as a new pipeline.
+- This won't trigger the pipeline, you have to add it as a new pipeline.
 - Click on Pipelines and the Create Pipeline button.
 - Click Azure Repos Git YAML option
 - Select the Repository
 - The pipeline needs to know which project you are building into a nuget package. In this case it'll be workshop.calculator so each of the steps that build will reference this with \*\*/workshop.calculator.csproj .
-- Another requirement for the pipeline is to know the GUID of the Artifact that is the Nuget Feed. Few tricks to obtain this including the below powershell script to
+- Another requirement for the pipeline is to know the GUID of the Artifact that is the Nuget Feed restore and target to push to for example. Use the following powershell with a valid PAT to get the GUIDS.
 
 ```powershell
 # === CONFIGURATION ===
@@ -169,11 +169,11 @@ $response.value | ForEach-Object {
 
 ```
 
--           publishVstsFeed: "9c1bc6ac-5cb4-4149-9cad-a096551fb621"
-          publishFeedCredentials: "calculatorserviceserviceconnection"
+- publishVstsFeed: "9c1bc6ac-5cb4-4149-9cad-a096551fb621"
+- publishFeedCredentials: "calculatorserviceserviceconnection"
 - once you have the GUID of the feed add it publishVstsFeed of the push section
 - add the Service Connection to the publishFeedCredentials entry of the push section
-- add a Version to the .csproj file. Everytime you push you should manually increment this. More advanced could be to auto increment this (tricky!)
+- add a Version to the .csproj file. Everytime you push you should manually increment this. More advanced could be to auto increment this from the pipeline.
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
