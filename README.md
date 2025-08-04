@@ -249,7 +249,7 @@ Next you should ensure you include a Version for the nuget package. Make sure yo
 
 ## Best Practice
 
-An extra step would be to place the variables into a Libbrary Group in the Pipelines section.
+An extra step would be to place the variables into a Library Group in the Pipelines section.
 
 - From the main project page go to Pipelines => Library
 - Click on the + Variable Group button
